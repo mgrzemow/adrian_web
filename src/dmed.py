@@ -27,6 +27,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 nltk.download('stopwords')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
+nltk.download('punkt')
 
 LISTINGS_FILE = '../data/listings.zip'
 POSTERS_FILE = '../data/posters.zip'
