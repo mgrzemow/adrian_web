@@ -15,12 +15,13 @@ if 'slownik_procedur' not in st.session_state:
     except OSError as e:
         st.session_state['slownik_procedur'] = {}
 
+
 @st.cache(allow_output_mutation=True)
 def load_predictor():
     print('load predictor')
-    with open(f'../data\svd_X_50_svd50.joblib', 'rb') as f:
+    with open(f'../data/svd_X_50_svd50.joblib', 'rb') as f:
         svd = joblib.load(f)
-    with open(f'../data\s_scaler_X_50_svd50.joblib', 'rb') as f:
+    with open(f'../data/s_scaler_X_50_svd50.joblib', 'rb') as f:
         s_scaler = joblib.load(f)
     with open('../data/best_mlp.joblib', 'rb') as f:
         clf = joblib.load(f)
