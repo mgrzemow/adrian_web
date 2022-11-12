@@ -1,15 +1,37 @@
+import os
+import pickle
+
+import joblib
 import pandas as pd
 import streamlit as st
-import random
-import pickle
-import openpyxl
+
+from dmed import MedPredictor
 
 if 'slownik_procedur' not in st.session_state:
+    print(os.getcwd())
     try:
         with open('kat_procedura.pickle', 'rb') as f:
             st.session_state['slownik_procedur'] = pickle.load(f)
     except OSError as e:
         st.session_state['slownik_procedur'] = {}
+
+@st.cache(allow_output_mutation=True)
+def load_predictor():
+    print('load predictor')
+    with open(f'data\svd_X_50_svd50.joblib', 'rb') as f:
+        svd = joblib.load(f)
+    with open(f'data\s_scaler_X_50_svd50.joblib', 'rb') as f:
+        s_scaler = joblib.load(f)
+    with open('data/best_mlp.joblib', 'rb') as f:
+        clf = joblib.load(f)
+    with open('data/tfidf_vectorizer_50.pickle', 'rb') as f:
+        tfidf = pickle.load(f)
+    p = MedPredictor(clf, tfidf, svd, s_scaler)
+    return p
+
+
+if 'predictor' not in st.session_state:
+    st.session_state['predictor'] = load_predictor()
 
 
 @st.cache
@@ -42,21 +64,28 @@ def load_procedury():
     return st.session_state['slownik_procedur'].get(st.session_state.wynik, [])
 
 
-@st.cache
-def przewiduj(tytul):
-    print('Przewiduję')
-    if tytul:
-        return random.choice(['Tomograf', 'USG', 'Inne'])
-    else:
-        return 'Nieznane'
+def przewiduj(tytul, cena, opis):
+    cena = float(cena)
+    print('Przewiduję dla:')
+    print(repr(tytul))
+    print(repr(cena))
+    print(repr(opis))
+    r = st.session_state['predictor'].predict(float(cena), tytul, opis)
+    print(f'Wynik: {r}')
+    return r[0]
 
 
 st.title('Przewidywanie typu urządzenia')
-st.subheader('Metoda: KNearest Neighbors')
+st.subheader('Metoda: MLP')
 st.text_input('Tytuł urządzenia', key='tytul')
-st.slider(label='Cena urządzenia', min_value=1, max_value=1000000, key='cena')
+st.number_input(label='Cena urządzenia', min_value=1, max_value=1000000, key='cena')
 st.text_area('Opis urządzenia', key='opis')
-st.text_input('Wynik', value=przewiduj(st.session_state.tytul), disabled=True, key='wynik')
+
+st.text_input('Wynik',
+              value=przewiduj(st.session_state.tytul, st.session_state.cena, st.session_state.opis),
+              disabled=True,
+              key='wynik')
+
 st.multiselect('Procedury',
                options=load_icd(),
                default=load_procedury(),
