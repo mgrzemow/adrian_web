@@ -44,9 +44,6 @@ D_THRESH = 100
 FIRST_N_CATS_VALUES = [20, 50, 100]
 L_LEVEL = logging.WARNING
 
-engine = sqlalchemy.create_engine(
-    "mariadb+mariadbconnector://projekty_medic:Medic2022!@vps1829.uphost.pro:3306/projekty_medic")
-
 
 class Timerek:
     _t = datetime.datetime.now()
@@ -242,6 +239,8 @@ def optional_read_DB(force_read=False, prohibit_read=False):
         logger.info('DB data up to date, loading...')
         return *load_pickle(), False
     elif force_read or not are_up_to_date():
+        engine = sqlalchemy.create_engine(
+            "mariadb+mariadbconnector://projekty_medic:Medic2022!@vps1829.uphost.pro:3306/projekty_medic")
         logger.info(f'Loading data from DB, force_read={force_read}...')
         cats, posters, listings = load_all_from_db(engine)
         save_pickle(cats, posters, listings)
