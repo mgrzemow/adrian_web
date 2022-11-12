@@ -58,3 +58,4 @@ nltk
 scipy
 sqlalchemy
 scikit-learn
+mariadb
